@@ -37,7 +37,6 @@ Inside `ssl`, create a file named `openssl.cnf` and paste the following:
 ```
 [req]
 distinguished_name = req_distinguished_name
-x509_extensions = v3_req
 prompt = no
 
 [req_distinguished_name]
