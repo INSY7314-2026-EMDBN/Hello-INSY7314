@@ -73,7 +73,7 @@ You will also reflect on the importance of security in real-world polling and vo
 
 ### 3. Build the Frontend
 
-- In the `pulsevote` folder, create a new sub-folder (e.g., pulsevote-frontend), run:
+- In the `pulsevote` folder, create a new sub-folder (e.g., pulsevote-frontend) and a new React application. To do this, run these commands:
     ```
     npm create vite@latest pulsevote-frontend -- --template react
     cd pulsevote-frontend
@@ -130,9 +130,72 @@ You will also reflect on the importance of security in real-world polling and vo
 
 ### 6. JSON 
 
-- Let the backend serve JSON at an endpoint `/test`
-- Allow the frontend to consume this JSON on the homepage.
-- Push changes to GitHub
+- Let the backend serve JSON at an endpoint `/test` by updating `app.js` in the backend:
+    ```
+    const express = require('express');
+    const cors = require('cors');
+    const helmet = require('helmet');
+    const dotenv = require('dotenv');
+
+    dotenv.config();
+
+    const app = express();
+
+    app.use(helmet());
+    app.use(cors());
+    app.use(express.json());
+
+    app.get('/', (req, res) => {
+    res.send('PulseVote API running!');
+    });
+
+    app.get('/test', (req, res) => {
+        res.json({
+        message: 'This is a test endpoint from PulseVote API!',
+        status: 'success',
+        timestamp: new Date()
+        });
+    });
+
+    module.exports = app;
+    ```
+
+- Allow the frontend to consume this JSON on the homepage by updating App.jsx in the frontend to this (note the changes):
+    ```
+    import { useState, useEffect } from 'react'
+    import './App.css'
+
+    function App() {
+    
+    const [apiTest, setApiTest] = useState(null);
+    useEffect(() => {
+        fetch("https://localhost:5000/test")
+        .then(res => res.json())
+        .then(data => setApiTest(data))
+        .catch(() => setApiTest({ message: "API not reachable" }));
+    }, []);
+
+    return (
+        <>
+        <h2>Welcome to PulseVote</h2>
+
+        <hr />
+        <h3>API Test Endpoint Result:</h3>
+        {apiTest ? (
+            <pre>{JSON.stringify(apiTest, null, 2)}</pre>
+        ) : (
+            <span>Loading...</span>
+        )}
+
+        </>
+    )
+    }
+
+    export default App
+
+    ```
+- Test locally - you should see the 
+- If all works, push changes to GitHub
 
 ### 7. Deliverables
 
