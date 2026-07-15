@@ -130,7 +130,7 @@ You will also reflect on the importance of security in real-world polling and vo
 
 ### 6. JSON 
 
-- Let the backend serve JSON at an endpoint `/test` by updating `app.js` in the backend:
+- Let the backend serve JSON at an endpoint `/test` by updating `app.js` in the backend (note the changes):
     ```
     const express = require('express');
     const cors = require('cors');
@@ -194,7 +194,7 @@ You will also reflect on the importance of security in real-world polling and vo
     export default App
 
     ```
-- Test locally - you should see the 
+- Test locally - you should see the JSON on the backend and then also consumed by the frontend.
 - If all works, push changes to GitHub
 
 ### 7. Deliverables
