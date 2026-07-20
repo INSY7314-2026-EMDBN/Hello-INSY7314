@@ -134,7 +134,7 @@ For production, always use a trusted CA certificate.
 To trust your cert and remove warnings:
 - Press Win + R, type certmgr.msc, and press Enter.
 - Expand Trusted Root Certification Authorities and select Certificates.
-- Right-click in the right pane, select All Tasks > Import...
+- In the menu, click on Actions, select All Tasks > Import...
 - Import ssl/cert.pem as a certificate file.
 - Make sure the certificate store is Trusted Root Certification Authorities.
 - Finish the wizard, accept warnings, and restart your browser.
