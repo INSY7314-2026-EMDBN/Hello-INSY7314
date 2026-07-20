@@ -7,7 +7,7 @@ Spend 10–15 minutes researching the following questions:
 - What is JWT?  
 - Why is JWT necessary in web applications?
 - How does JWT work?
-- What could happen if a web application does not use SSL?
+- What could happen if a web application does not use JWT?
 - Find one real-world example (news or blog) of a security incident involving JWT being omitted or misconfigured
 
 Write a short summary (4–6 sentences) in your own words. Add this write up into your repo as well.
@@ -45,7 +45,20 @@ Remember, you need to research and understand as you go...
         console.error('MongoDB connection error:', err);
     });
     ```
-5. Test your app
+5. Test your API
+6. If you get an error, remember to add your IP address to the IP Access List under the Database and Network Access tab in MongoDB Cloud.
+
+### Workaround: Using MongoDB Locally
+If you get a connection refused error, you can opt to test with MongoDB running locally.
+
+1. Download and install MongoDB from: https://www.mongodb.com/try/download/community
+2. Choose to install MongoDB Compass to make life easier - this is the MongoDB UI.
+3. Once installed, create a new DB locally called ```pulsevote```
+4. Update your connection string in ```.env``` 
+  ```
+  MONGO_URI=mongodb://127.0.0.1:27017/pulsevote
+  ```
+5. Test your API.
 
 ## 2. API changes
 
