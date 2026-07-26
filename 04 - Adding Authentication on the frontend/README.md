@@ -663,9 +663,152 @@ Your stylesheet should include styles for:
 * Error messages
 * Success messages
 
-At a minimum, include clear styles for the two message types:
+Possible `App.css`:
 
 ```css
+/* ==== Base Theme ==== */
+:root {
+  --color-bg: #1e1e1e;
+  --color-fg: #ffffff;
+  --color-muted: #888;
+  --color-accent: #4ea1ff;
+  --color-border: #333;
+  --color-input: #2a2a2a;
+  --color-btn: #121212;
+  --color-btn-hover: #333;
+  --font-family: 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light dark;
+}
+
+/* ==== Global Styles ==== */
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  margin: 0;
+  padding: 2rem;
+}
+
+/* ==== Typography ==== */
+h1, h2, h3 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+p {
+  margin-bottom: 1rem;
+  color: var(--color-muted);
+}
+
+/* ==== Navigation ==== */
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem; /* space between links */
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.5rem;
+}
+
+nav a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  transition: color 0.2s ease;
+}
+
+nav a:hover {
+  text-decoration: underline;
+  color: var(--color-fg); /* subtle hover effect */
+}
+
+nav a.active {
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 0.25rem;
+}
+/* ==== Forms ==== */
+form {
+  margin-top: 1rem;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-input);
+  color: var(--color-fg);
+}
+
+/* ==== Buttons ==== */
+button {
+  background-color: var(--color-btn);
+  color: var(--color-fg);
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+button:hover {
+  background-color: var(--color-btn-hover);
+}
+
+/* Center the app layout vertically & horizontally */
+.page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30vh;
+  padding: 1rem;
+}
+
+/* Optional background panel */
+.card {
+  background-color: #2a2a2a;
+  border-radius: 12px;
+  padding: 2rem 3rem;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Clean container layout */
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.app-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex-grow: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* changed from center */
+  margin-top: 2rem;        /* optional fine-tune */
+}
+
 .error-message {
   background-color: #2f1c1c;
   color: #ff6b6b;
@@ -673,6 +816,7 @@ At a minimum, include clear styles for the two message types:
   border-radius: 6px;
   margin-bottom: 1rem;
   border: 1px solid #ff6b6b;
+  font-size: 0.95rem;
 }
 
 .success-message {
@@ -682,7 +826,9 @@ At a minimum, include clear styles for the two message types:
   border-radius: 6px;
   margin-bottom: 1rem;
   border: 1px solid #4afc75;
+  font-size: 0.95rem;
 }
+
 ```
 
 Use consistent layout and styling across all pages.
