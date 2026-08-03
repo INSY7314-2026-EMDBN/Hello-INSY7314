@@ -575,6 +575,15 @@ The backend is using HTTPS, so the CSP configuration should use the same protoco
 
 Start the backend: `npm run dev`
 
+### Troubleshooting Note
+For `npm run dev` to work, you need to add this to the `scripts` section of `package.json`
+```
+"scripts": {
+    "dev": "npx nodemon server.js", 
+    "test": "echo \"error no tests specified\" && exit 1"
+  }
+```
+
 Test the following before working on React:
 
 1. Log in as administrator.
