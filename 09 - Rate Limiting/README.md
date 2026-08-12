@@ -114,5 +114,5 @@ app.use(express.json());
 ```
 ## Postman Testing
 
-1. I have shared [Postman Test Script](/08%20-%20Rate%20Limiting/PulseVite%20Rate%20Limit%20Test.postman_collection). This script will test the API using some predefined values. It will ping your login 5 times and register 5 times which should result in an error 429.
+1. I have shared [Postman Test Script](/09%20-%20Rate%20Limiting/PulseVote%20Rate%20Limit%20Test.postman_collection.json). This script will test the API using some predefined values. It will ping your login 5 times and register 5 times which should result in an error 429.
 3. Open it in Postman and run the test scripts separately. If you have configured your API correctly, it should pass all tests. If not, either adjust your API or tests.
