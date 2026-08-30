@@ -41,10 +41,11 @@ After this activity, your PulseVote API pipeline will:
 * Run the production API as a Docker-based Render Web Service
 * Use the same MongoDB Atlas database from the existing `MONGO_URI` configuration
 * Expose the `/health` endpoint to Render as the service health check
+* Wait for the Render deployment itself to complete successfully before the GitHub Actions deployment job passes
 
 ## The same Atlas database is used throughout this learning project
 
-For this learning activity, PulseVote uses the same MongoDB Atlas database for the GitHub Actions pipeline and the deployed Render API. Therefore, Render should use that **same Atlas database**:
+For this learning activity, PulseVote uses the same MongoDB Atlas database for the GitHub Actions pipeline and the deployed Render API. Therefore, Render should use that same Atlas database:
 
 ```text
 Render
@@ -181,13 +182,27 @@ Open your PulseVote GitHub repository and go to: `Settings → Secrets and varia
 
 Create `RENDER_DEPLOY_HOOK_URL` and paste the Render deploy hook URL as its value.
 
-## Part 8 – Update the GitHub Actions workflow
+### Add the Render API details needed to wait for deployment
 
-Open:
+The deploy hook starts the deployment, but a successful response from the hook does not mean that Render has finished building and deploying the API.
+
+Render returns a deployment ID when the deployment starts. GitHub Actions can use that deployment ID to check the deployment status through the Render API.
+
+Create two more repository secrets:
 
 ```text
-.github/workflows/api-ci.yml
+RENDER_API_KEY
+RENDER_SERVICE_ID
 ```
+
+To get `RENDER_API_KEY`, create a Render API key from your Render account settings.
+To get `RENDER_SERVICE_ID`, open your PulseVote API service in Render and copy its service ID. It starts with `srv-`
+
+Keep the API key in GitHub Secrets because it gives programmatic access to your Render account.
+
+## Part 8 – Update the GitHub Actions workflow
+
+Open `.github/workflows/api-ci.yml`
 
 Change the workflow name from:
 
@@ -214,9 +229,53 @@ After that job, add a second job at the same indentation level as `api-ci`:
 
     steps:
       - name: Trigger Render deployment
+        id: trigger-render
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: curl --fail-with-body --show-error --silent --request POST "$RENDER_DEPLOY_HOOK_URL"
+        run: |
+          RESPONSE=$(curl --fail-with-body --show-error --silent --request POST "$RENDER_DEPLOY_HOOK_URL")
+
+          DEPLOY_ID=$(echo "$RESPONSE" | jq -r '.deploy.id // .id // empty')
+
+          if [ -z "$DEPLOY_ID" ]; then
+            echo "Render accepted the request but did not return a deployment ID."
+            exit 1
+          fi
+
+          echo "Render deployment started: $DEPLOY_ID"
+          echo "deploy_id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for Render deployment to complete
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          DEPLOY_ID: ${{ steps.trigger-render.outputs.deploy_id }}
+        run: |
+          for i in {1..90}; do
+            RESPONSE=$(curl --fail-with-body --show-error --silent \
+              --header "Authorization: Bearer $RENDER_API_KEY" \
+              "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys/$DEPLOY_ID")
+
+            STATUS=$(echo "$RESPONSE" | jq -r '.status // .deploy.status // empty')
+            echo "Render deployment status: $STATUS"
+
+            if [ "$STATUS" = "live" ]; then
+              echo "Render deployment completed successfully."
+              exit 0
+            fi
+
+            case "$STATUS" in
+              build_failed|update_failed|pre_deploy_failed|canceled|deactivated)
+                echo "Render deployment failed with status: $STATUS"
+                exit 1
+                ;;
+            esac
+
+            sleep 10
+          done
+
+          echo "Timed out waiting for Render deployment to complete."
+          exit 1
 ```
 
 ## What does the new job do?
@@ -261,6 +320,33 @@ curl --fail-with-body --show-error --silent --request POST "$RENDER_DEPLOY_HOOK_
 sends an HTTP request to Render's deploy hook.
 
 If Render rejects the deploy-hook request, `curl` exits unsuccessfully and the deployment job fails.
+
+### Waiting for the deployment to finish
+
+Triggering the deploy hook is only the start of the deployment. A GitHub Actions job should not report success while Render is still building the API.
+
+The updated deployment job therefore:
+1. Stores the JSON response returned by the deploy hook.
+2. Extracts the Render deployment ID.
+3. Saves that ID as a GitHub Actions step output.
+4. Calls the Render API every 10 seconds to check that exact deployment.
+5. Passes only when the deployment status becomes `live`.
+6. Fails if Render reports a failed, cancelled or deactivated deployment.
+
+Render can report intermediate states such as:
+
+```text
+created
+build_in_progress
+pre_deploy_in_progress
+update_in_progress
+```
+
+The job keeps waiting while the deployment is in progress.
+
+A successful deployment ends with `live`
+
+The loop checks up to 90 times with a 10-second delay, giving Render approximately 15 minutes to complete the deployment.
 
 ## Complete workflow
 
@@ -391,9 +477,53 @@ jobs:
 
     steps:
       - name: Trigger Render deployment
+        id: trigger-render
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: curl --fail-with-body --show-error --silent --request POST "$RENDER_DEPLOY_HOOK_URL"
+        run: |
+          RESPONSE=$(curl --fail-with-body --show-error --silent --request POST "$RENDER_DEPLOY_HOOK_URL")
+
+          DEPLOY_ID=$(echo "$RESPONSE" | jq -r '.deploy.id // .id // empty')
+
+          if [ -z "$DEPLOY_ID" ]; then
+            echo "Render accepted the request but did not return a deploy ID."
+            exit 1
+          fi
+
+          echo "Render deploy started: $DEPLOY_ID"
+          echo "deploy_id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for Render deployment to complete
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          DEPLOY_ID: ${{ steps.trigger-render.outputs.deploy_id }}
+        run: |
+          for i in {1..90}; do
+            RESPONSE=$(curl --fail-with-body --show-error --silent \
+              --header "Authorization: Bearer $RENDER_API_KEY" \
+              "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys/$DEPLOY_ID")
+
+            STATUS=$(echo "$RESPONSE" | jq -r '.status // .deploy.status // empty')
+            echo "Render deployment status: $STATUS"
+
+            if [ "$STATUS" = "live" ]; then
+              echo "Render deployment completed successfully."
+              exit 0
+            fi
+
+            case "$STATUS" in
+              build_failed|update_failed|pre_deploy_failed|canceled)
+                echo "Render deployment failed with status: $STATUS"
+                exit 1
+                ;;
+            esac
+
+            sleep 10
+          done
+
+          echo "Timed out waiting for Render deployment to complete."
+          exit 1
 ```
 
 ## Part 9 – Commit and push
@@ -411,6 +541,10 @@ git push
 Open the Actions tab in GitHub.
 
 You should first see `api-ci` run through the complete pipeline. Only after it succeeds should you see `Deploy API to Render` run. Then open the Render service's Events or Logs page. A new deployment should have been triggered.
+
+The `Deploy API to Render` job should now remain in progress while Render builds and deploys the API. It should only turn green after Render reports that the deployment is `live`.
+
+This means that the GitHub Actions result now represents the complete deployment rather than only the request to start the deployment.
 
 ## Part 10 – Verify the deployed API
 
