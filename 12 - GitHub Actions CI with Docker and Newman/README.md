@@ -107,12 +107,35 @@ The collection from Activity 7 also stores tokens and IDs as it runs. For exampl
 
 ### 2. Add a collection-level test
 
-The Activity 7 collection used Postman scripts mainly to capture tokens and IDs for later requests. Now that the collection will act as a CI quality gate, add one collection-level Post-response test so that an unsuccessful API response fails Newman:
+The Activity 7 collection used Postman scripts mainly to capture tokens and IDs for later requests. Now that the collection will act as a CI quality gate, add one collection-level Post-response test so that an unsuccessful API response fails Newman.
+
+In the `PulseVote RBAC Test.postman_collection.json` add the event object as per below:
 
 ```javascript
-pm.test('Request returns a successful HTTP status', function () {
-    pm.expect(pm.response.code).to.be.within(200, 299);
-});
+"info": { // already there
+    "_postman_id": "1cd5e485-f390-4337-9651-022bff57b210",
+    "name": "PulseVote RBAC Test",
+    "description": "RBAC collection from Activity 7, reused for automated Newman testing in Activity 12.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "10616096"
+},
+"event": [ // add this section in
+  {
+    "listen": "test",
+    "script": {
+      "type": "text/javascript",
+      "exec": [
+        "pm.test('Request returns a successful HTTP status', function () {",
+        "    pm.expect(pm.response.code).to.be.within(200, 299);",
+        "});"
+      ]
+    }
+  }
+],
+"item": [ // already there
+  // rest of the code
+]
+;
 ```
 
 Add this at collection level, not separately to every request. It will then run after each request in the collection.
