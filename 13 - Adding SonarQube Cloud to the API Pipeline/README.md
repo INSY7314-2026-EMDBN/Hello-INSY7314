@@ -37,6 +37,8 @@ After this activity, your PulseVote backend will also:
 * display code-quality and security findings in SonarQube Cloud; and
 * use the SonarQube Quality Gate as another pipeline check.
 
+> Note: you may need to push your project to your own repo for this activity as Sonar permissions won't work on the organisation.
+
 ## 1. Create a SonarQube Cloud project
 
 1. Go to SonarQube Cloud and sign in using GitHub.
@@ -200,8 +202,8 @@ Immediately after the coverage step, add:
   with:
     projectBaseDir: pulsevote-backend
     args: >
-      -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
-      -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+      -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+      -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
       -Dsonar.qualitygate.wait=true
 ```
 
@@ -264,8 +266,8 @@ jobs:
         with:
           projectBaseDir: pulsevote-backend
           args: >
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.qualitygate.wait=true
 
       - name: Clear CI test database
